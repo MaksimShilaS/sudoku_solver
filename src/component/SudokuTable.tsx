@@ -1,6 +1,7 @@
 import React from 'react';
 import { AVAILABLE_CELL_VALUES, DEFAULT_CELL_VALUE } from '../app/Cell';
 import { ClassicSudoku, Sudoku } from '../app/Sudoku';
+import { getTestField } from '../app/TestField';
 import './style.css';
 
 export const SudokuTable: React.FC = () => {
@@ -40,7 +41,11 @@ export const SudokuTable: React.FC = () => {
         setInitialField(undefined);
     };
 
-    console.log(field);
+    const setTestField = (index: number): void => {
+        const field = getTestField(index);
+        setField(field);
+    };
+
     return (
         <div>
             <table className='game-table'>
@@ -67,6 +72,9 @@ export const SudokuTable: React.FC = () => {
                 Reset
             </button>
             <button onClick={handleClear}>Clear</button>
+            <div>
+                <button onClick={() => setTestField(1)}>Use Test Field 1</button>
+            </div>
         </div>
     );
 };
