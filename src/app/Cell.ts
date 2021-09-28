@@ -1,10 +1,12 @@
 interface CellType {
-    limitRange: (values: number[]) => boolean; // Removes provided values from available on this cell. Returns true if there was matches
     isValid: () => boolean;
     setIsValid: (isValid: boolean) => void;
     setValue: (value: number) => void;
     getValue: () => number;
     hasValue: () => boolean;
+    getPossibleValues: () => number[];
+    setPossibleValues: (values: number[]) => void;
+    fill: (value: number) => void;
 }
 
 export const DEFAULT_CELL_VALUE = 0;
@@ -15,17 +17,9 @@ export class Cell implements CellType {
     private valid = true;
     private possibleValues = AVAILABLE_CELL_VALUES;
 
-    public limitRange = (values: number[]): boolean => {
-        const filteredValues = this.possibleValues.filter((val) => !values.includes(val));
-        if (filteredValues.length !== this.possibleValues.length) {
-            this.possibleValues = filteredValues;
-            if (this.possibleValues.length === 1) {
-                this.setValue(this.possibleValues[0]);
-                this.possibleValues = [];
-            }
-            return true;
-        }
-        return false;
+    public fill = (value: number): void => {
+        this.setValue(value);
+        this.possibleValues = [];
     };
 
     public isValid = (): boolean => {
@@ -46,5 +40,13 @@ export class Cell implements CellType {
 
     public hasValue = (): boolean => {
         return this.value !== DEFAULT_CELL_VALUE;
+    };
+
+    public getPossibleValues = (): number[] => {
+        return this.possibleValues;
+    };
+
+    public setPossibleValues = (values: number[]): void => {
+        this.possibleValues = values;
     };
 }

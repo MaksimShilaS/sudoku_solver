@@ -6,8 +6,11 @@
 
 .game-table__row__cell {
     border: 1px solid black;
+    width: 60px;
+    height: 60px;
     padding: 0;
     margin: 0;
+    word-wrap: break-word;
 }
 
 .game-table__row__cell:nth-child(3n) {

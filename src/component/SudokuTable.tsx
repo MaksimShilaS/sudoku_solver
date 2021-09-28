@@ -7,6 +7,7 @@ import './style.css';
 export const SudokuTable: React.FC = () => {
     const [field, setField] = React.useState<Sudoku>(new ClassicSudoku());
     const [initialField, setInitialField] = React.useState<Sudoku | undefined>();
+    const [showPossibleValues, setShowPossibleValues] = React.useState<boolean>(false);
     const [, updateState] = React.useState<object>();
 
     const forceUpdate = React.useCallback(() => updateState({}), []);
@@ -24,7 +25,7 @@ export const SudokuTable: React.FC = () => {
             return;
         }
         const fieldCopy = field.clone();
-        fieldCopy.getCell(rowIndex, cellIndex).setValue(cellValue);
+        fieldCopy.getCell(rowIndex, cellIndex).fill(cellValue);
         fieldCopy.validate();
         setField(fieldCopy);
     };
@@ -46,6 +47,7 @@ export const SudokuTable: React.FC = () => {
         setField(field);
     };
 
+    console.log(showPossibleValues);
     return (
         <div>
             <table className='game-table'>
@@ -54,26 +56,35 @@ export const SudokuTable: React.FC = () => {
                         <tr className='game-table__row' key={rowIndex}>
                             {row.map((cell, cellIndex) => (
                                 <td className='game-table__row__cell' key={cellIndex}>
-                                    <input
-                                        className={'game-table__row__cell__input' + (cell.isValid() ? '' : ' invalid-cell')}
-                                        onChange={(event) => handleCellChange(rowIndex, cellIndex, event.target.value)}
-                                        value={cell.getValue() === DEFAULT_CELL_VALUE ? '' : cell.getValue()}
-                                    />
+                                    {(!showPossibleValues || cell.getValue() != DEFAULT_CELL_VALUE) && (
+                                        <input
+                                            className={'game-table__row__cell__input' + (cell.isValid() ? '' : ' invalid-cell')}
+                                            onChange={(event) => handleCellChange(rowIndex, cellIndex, event.target.value)}
+                                            value={cell.getValue() === DEFAULT_CELL_VALUE ? '' : cell.getValue()}
+                                        />
+                                    )}
+                                    {showPossibleValues && <span>{cell.getPossibleValues().join(' ')}</span>}
                                 </td>
                             ))}
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <button onClick={handleSubmit} disabled={!field.isValid()}>
-                Solve
-            </button>
-            <button onClick={handleReset} disabled={!initialField}>
-                Reset
-            </button>
-            <button onClick={handleClear}>Clear</button>
+            <div>
+                <button onClick={handleSubmit} disabled={!field.isValid()}>
+                    Solve
+                </button>
+                <button onClick={handleReset} disabled={!initialField}>
+                    Reset
+                </button>
+                <button onClick={handleClear}>Clear</button>
+                <span> Show possible values</span>
+                <input type='checkbox' value={`${showPossibleValues}`} onChange={(event) => setShowPossibleValues(event.target.checked)} />
+            </div>
             <div>
                 <button onClick={() => setTestField(1)}>Use Test Field 1</button>
+                <button onClick={() => setTestField(2)}>Use Test Field 2</button>
+                <button onClick={() => setTestField(3)}>Use Test Field 3</button>
             </div>
         </div>
     );

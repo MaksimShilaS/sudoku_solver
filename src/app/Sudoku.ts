@@ -1,5 +1,8 @@
 import { Notification } from '../utils/Notification';
 import { Cell, DEFAULT_CELL_VALUE } from './Cell';
+import { ByKnownCellsStrategy } from './strategy/ByKnownCellsStrategy';
+import { BySinglePossibleValueStrategy } from './strategy/BySinglePossibleValueStrategy';
+import { SolveStrategy } from './strategy/SolveStrategy';
 
 export interface Sudoku {
     solve: (onValueSet: () => void) => void;
@@ -13,6 +16,7 @@ export interface Sudoku {
 export class ClassicSudoku implements Sudoku {
     private spec = { length: 9 };
     private cells: Cell[][];
+    private strategies: SolveStrategy[] = [new ByKnownCellsStrategy(), new BySinglePossibleValueStrategy()];
 
     constructor() {
         this.cells = this.emptyField();
@@ -34,23 +38,20 @@ export class ClassicSudoku implements Sudoku {
                     }
                     const column = columns[columnIndex];
                     const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
-                    const knownValues = row
-                        .concat(column)
-                        .concat(square)
-                        .filter((cell) => cell.hasValue())
-                        .map((cell) => cell.getValue())
-                        .filter((value, index, self) => self.indexOf(value) === index); // Unique values
-                    const cellUpdated = cell.limitRange(knownValues);
+                    const cellUpdated = this.strategies
+                        .map((strategy) => strategy.solve(cell, row, column, square))
+                        .some((cellUpdated) => cellUpdated);
                     if (cell.hasValue()) {
                         onValueSet();
                     }
                     return cellUpdated;
                 });
             });
-            hasChanges = cellsUpdated.filter((cellUpdated) => cellUpdated).length > 0;
+            hasChanges = cellsUpdated.some((cellUpdated) => cellUpdated);
         } while (!this.solved() && hasChanges);
         if (!this.solved()) {
             Notification.warn("Couldn't solve this sudoku");
+            console.log(this.cells);
         }
     };
 

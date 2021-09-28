@@ -1,8 +1,23 @@
+import { DEFAULT_CELL_VALUE } from './Cell';
 import { ClassicSudoku, Sudoku } from './Sudoku';
 
 const TEST_FIELDS = new Map([
     [
         1,
+        [
+            [0, 0, 6, 8, 7, 1, 0, 0, 3],
+            [0, 7, 3, 0, 5, 6, 1, 9, 0],
+            [0, 0, 0, 3, 4, 9, 0, 2, 7],
+            [3, 4, 2, 0, 0, 0, 0, 8, 0],
+            [0, 6, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 3, 0, 5, 2],
+            [0, 1, 0, 7, 0, 4, 8, 0, 0],
+            [7, 0, 0, 5, 9, 8, 2, 6, 1],
+            [0, 0, 5, 0, 0, 0, 9, 0, 0],
+        ],
+    ],
+    [
+        2,
         [
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 6, 5, 0, 2, 0, 9, 1, 0],
@@ -15,6 +30,20 @@ const TEST_FIELDS = new Map([
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
         ],
     ],
+    [
+        3,
+        [
+            [0, 0, 0, 0, 5, 0, 0, 0, 0],
+            [0, 8, 0, 0, 0, 0, 0, 6, 0],
+            [6, 0, 9, 0, 0, 0, 3, 0, 8],
+            [0, 2, 0, 1, 0, 4, 0, 3, 0],
+            [5, 0, 0, 3, 9, 2, 0, 0, 7],
+            [0, 1, 0, 8, 0, 5, 0, 9, 0],
+            [4, 0, 3, 0, 0, 0, 2, 0, 6],
+            [0, 5, 0, 0, 0, 0, 0, 8, 0],
+            [0, 0, 0, 0, 3, 0, 0, 0, 0],
+        ],
+    ],
 ]);
 
 export const getTestField = (index: number): Sudoku => {
@@ -23,7 +52,10 @@ export const getTestField = (index: number): Sudoku => {
     if (values) {
         field.getCells().forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
-                cell.setValue(values[rowIndex][cellIndex]);
+                const value = values[rowIndex][cellIndex];
+                if (value != DEFAULT_CELL_VALUE) {
+                    cell.fill(value);
+                }
             });
         });
     }
