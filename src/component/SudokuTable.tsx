@@ -63,7 +63,9 @@ export const SudokuTable: React.FC = () => {
                                             value={cell.getValue() === DEFAULT_CELL_VALUE ? '' : cell.getValue()}
                                         />
                                     )}
-                                    {showPossibleValues && <span>{cell.getPossibleValues().join(' ')}</span>}
+                                    {showPossibleValues && cell.getValue() === DEFAULT_CELL_VALUE && (
+                                        <span>{cell.getPossibleValues().join(' ')}</span>
+                                    )}
                                 </td>
                             ))}
                         </tr>
