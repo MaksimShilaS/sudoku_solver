@@ -35,6 +35,11 @@ export const SudokuTable: React.FC = () => {
         }
     };
 
+    const handleClear = (): void => {
+        setField(new ClassicSudoku());
+        setInitialField(undefined);
+    };
+
     console.log(field);
     return (
         <div>
@@ -61,6 +66,7 @@ export const SudokuTable: React.FC = () => {
             <button onClick={handleReset} disabled={!initialField}>
                 Reset
             </button>
+            <button onClick={handleClear}>Clear</button>
         </div>
     );
 };
