@@ -53,7 +53,7 @@ export const getTestField = (index: number): Sudoku => {
         field.getCells().forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 const value = values[rowIndex][cellIndex];
-                if (value != DEFAULT_CELL_VALUE) {
+                if (value !== DEFAULT_CELL_VALUE) {
                     cell.fill(value);
                 }
             });

@@ -45,9 +45,9 @@ export const SudokuTable: React.FC = () => {
     const setTestField = (index: number): void => {
         const field = getTestField(index);
         setField(field);
+        setInitialField(undefined);
     };
 
-    console.log(showPossibleValues);
     return (
         <div>
             <table className='game-table'>
@@ -56,7 +56,7 @@ export const SudokuTable: React.FC = () => {
                         <tr className='game-table__row' key={rowIndex}>
                             {row.map((cell, cellIndex) => (
                                 <td className='game-table__row__cell' key={cellIndex}>
-                                    {(!showPossibleValues || cell.getValue() != DEFAULT_CELL_VALUE) && (
+                                    {(!showPossibleValues || cell.getValue() !== DEFAULT_CELL_VALUE) && (
                                         <input
                                             className={'game-table__row__cell__input' + (cell.isValid() ? '' : ' invalid-cell')}
                                             onChange={(event) => handleCellChange(rowIndex, cellIndex, event.target.value)}
