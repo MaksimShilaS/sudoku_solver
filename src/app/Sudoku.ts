@@ -76,7 +76,15 @@ export class ClassicSudoku implements Sudoku {
         return this.cells.flatMap((v) => v).filter((cell) => !cell.isValid()).length === 0;
     };
 
-    public clone = (): Sudoku => Object.assign({}, this);
+    public clone = (): Sudoku => {
+        const clone = new ClassicSudoku();
+        this.cells.forEach((row, rowIndex) => {
+            row.forEach((cell, cellIndex) => {
+                clone.getCell(rowIndex, cellIndex).setValue(cell.getValue());
+            });
+        });
+        return clone;
+    };
 
     private validateRanges = (ranges: Cell[][]): void => {
         ranges.forEach((range) => {

@@ -5,11 +5,15 @@ import './style.css';
 
 export const SudokuTable: React.FC = () => {
     const [field, setField] = React.useState<Sudoku>(new ClassicSudoku());
+    const [initialField, setInitialField] = React.useState<Sudoku | undefined>();
     const [, updateState] = React.useState<object>();
 
     const forceUpdate = React.useCallback(() => updateState({}), []);
 
     const handleSubmit = (): void => {
+        if (!initialField) {
+            setInitialField(field.clone());
+        }
         field.solve(forceUpdate);
     };
 
@@ -24,6 +28,14 @@ export const SudokuTable: React.FC = () => {
         setField(fieldCopy);
     };
 
+    const handleReset = (): void => {
+        console.log(initialField);
+        if (initialField) {
+            setField(initialField.clone());
+        }
+    };
+
+    console.log(field);
     return (
         <div>
             <table className='game-table'>
@@ -45,6 +57,9 @@ export const SudokuTable: React.FC = () => {
             </table>
             <button onClick={handleSubmit} disabled={!field.isValid()}>
                 Solve
+            </button>
+            <button onClick={handleReset} disabled={!initialField}>
+                Reset
             </button>
         </div>
     );
