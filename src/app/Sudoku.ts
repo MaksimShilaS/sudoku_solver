@@ -59,6 +59,7 @@ export class ClassicSudoku implements Sudoku {
             let hasChanges = false;
             const columns = this.getColumns();
             do {
+                hasChanges = false;
                 for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
                     for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
                         while (this.paused && this.running) {
@@ -77,20 +78,39 @@ export class ClassicSudoku implements Sudoku {
                         const cellUpdated = this.strategies
                             .map((strategy) => strategy.solve(cell, row, column, square))
                             .some((cellUpdated) => cellUpdated);
+                        if (cell.hasValue()) {
+                            this.removeFromPossibleValues(cell.getValue(), row);
+                            this.removeFromPossibleValues(cell.getValue(), column);
+                            this.removeFromPossibleValues(cell.getValue(), square);
+                        }
                         if (cellUpdated) {
                             await onCellUpdated();
+                            await this.sleep(this.timeoutMs);
                         }
-                        await this.sleep(this.timeoutMs);
                         hasChanges = cellUpdated || hasChanges;
                     }
                 }
             } while (this.running && !this.solved() && hasChanges);
             if (!this.solved()) {
                 Notification.warn("Couldn't solve this sudoku");
+            } else {
+                Notification.info('Sudoku solved!');
             }
             this.running = false;
             resolve();
         });
+    };
+
+    private removeFromPossibleValues = (value: number, range: Cell[]): void => {
+        range
+            .filter((cell) => !cell.hasValue())
+            .forEach((cell) => {
+                const possibleValues = cell.getPossibleValues();
+                if (possibleValues.includes(value)) {
+                    const filtered = possibleValues.filter((v) => v !== value);
+                    filtered.length === 1 ? cell.fill(filtered[0]) : cell.setPossibleValues(filtered);
+                }
+            });
     };
 
     private sleep = (timeoutMs: number): Promise<void> => {
