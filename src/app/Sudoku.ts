@@ -7,6 +7,10 @@ import { SolveStrategy } from './strategy/SolveStrategy';
 export interface Sudoku {
     solve: (onCellUpdated: () => Promise<void>) => Promise<void>;
     stop: () => void;
+    pause: () => void;
+    isRunning: () => boolean;
+    isPaused: () => boolean;
+    continue: () => void;
     getCells: () => Cell[][];
     getCell: (rowIndex: number, cellIndex: number) => Cell;
     validate: () => void;
@@ -14,7 +18,6 @@ export interface Sudoku {
     clone: () => Sudoku;
     setTimeoutMs: (millis: number) => void;
     getTimeoutMs: () => number;
-    isRunning: () => boolean;
 }
 
 export class ClassicSudoku implements Sudoku {
@@ -23,6 +26,7 @@ export class ClassicSudoku implements Sudoku {
     private cells: Cell[][];
     private strategies: SolveStrategy[] = [new ByKnownCellsStrategy(), new BySinglePossibleValueStrategy()];
     private running = false;
+    private paused = false;
 
     constructor() {
         this.cells = this.emptyField();
@@ -32,11 +36,21 @@ export class ClassicSudoku implements Sudoku {
         this.running = false;
     };
 
+    public pause = (): void => {
+        this.paused = true;
+    };
+
+    public continue = (): void => {
+        this.paused = false;
+    };
+
     public isRunning = (): boolean => this.running;
 
+    public isPaused = (): boolean => this.paused;
+
     public solve = (onCellUpdated: () => Promise<void>): Promise<void> => {
-        this.running = true;
         return new Promise<void>(async (resolve) => {
+            this.running = true;
             this.validate();
             if (!this.isValid) {
                 Notification.error('Sudoku field data is not valid');
@@ -47,6 +61,9 @@ export class ClassicSudoku implements Sudoku {
             do {
                 for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
                     for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
+                        while (this.paused && this.running) {
+                            await this.sleep(1000);
+                        }
                         if (!this.running) {
                             break;
                         }
@@ -63,17 +80,21 @@ export class ClassicSudoku implements Sudoku {
                         if (cellUpdated) {
                             await onCellUpdated();
                         }
-                        await new Promise((resolve) => setTimeout(resolve, this.timeoutMs));
+                        await this.sleep(this.timeoutMs);
                         hasChanges = cellUpdated || hasChanges;
                     }
                 }
             } while (this.running && !this.solved() && hasChanges);
-            this.stop();
             if (!this.solved()) {
                 Notification.warn("Couldn't solve this sudoku");
             }
+            this.running = false;
             resolve();
         });
+    };
+
+    private sleep = (timeoutMs: number): Promise<void> => {
+        return new Promise((resolve) => setTimeout(resolve, timeoutMs));
     };
 
     public setTimeoutMs = (millis: number): void => {

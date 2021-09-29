@@ -35,15 +35,21 @@ export const SudokuTable: React.FC = () => {
     };
 
     const handleReset = (): void => {
-        console.log(initialField);
         if (initialField) {
+            field.stop();
             setField(initialField.clone());
         }
     };
 
     const handleClear = (): void => {
+        field.stop();
         setField(new ClassicSudoku());
         setInitialField(undefined);
+    };
+
+    const handlePause = (): void => {
+        field.isPaused() ? field.continue() : field.pause();
+        updateState({});
     };
 
     const handleSpeedChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -82,11 +88,11 @@ export const SudokuTable: React.FC = () => {
                 </tbody>
             </table>
             <div>
-                <button onClick={handleSubmit} disabled={!field.isValid()}>
+                <button onClick={handleSubmit} disabled={!field.isValid() || field.isRunning()}>
                     Solve
                 </button>
-                <button onClick={() => field.stop()} disabled={!field.isRunning()}>
-                    Stop Solve
+                <button onClick={handlePause} disabled={!field.isRunning()}>
+                    {field.isPaused() ? 'Continue' : 'Pause'}
                 </button>
                 <button onClick={handleReset} disabled={!initialField}>
                     Reset
