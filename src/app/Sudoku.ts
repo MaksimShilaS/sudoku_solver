@@ -2,6 +2,7 @@ import { Notification } from '../utils/Notification';
 import { Cell, DEFAULT_CELL_VALUE } from './Cell';
 import { ByKnownCellsStrategy } from './strategy/ByKnownCellsStrategy';
 import { BySinglePossibleValueStrategy } from './strategy/BySinglePossibleValueStrategy';
+import { ByValuesRangeStrategy } from './strategy/ByValuesRangeStrategy';
 import { SolveStrategy } from './strategy/SolveStrategy';
 
 export interface Sudoku {
@@ -24,7 +25,11 @@ export class ClassicSudoku implements Sudoku {
     private spec = { length: 9 };
     private timeoutMs: number = 0;
     private cells: Cell[][];
-    private strategies: SolveStrategy[] = [new ByKnownCellsStrategy(), new BySinglePossibleValueStrategy()];
+    private strategies: SolveStrategy[] = [
+        new ByKnownCellsStrategy(),
+        new BySinglePossibleValueStrategy(),
+        // new ByValuesRangeStrategy()
+    ];
     private running = false;
     private paused = false;
 
