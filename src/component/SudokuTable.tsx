@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { AVAILABLE_CELL_VALUES, DEFAULT_CELL_VALUE } from '../app/Cell';
 import { ClassicSudoku, Sudoku } from '../app/Sudoku';
 import { getTestField } from '../app/TestField';
@@ -10,13 +10,18 @@ export const SudokuTable: React.FC = () => {
     const [showPossibleValues, setShowPossibleValues] = React.useState<boolean>(false);
     const [, updateState] = React.useState<object>();
 
-    const forceUpdate = React.useCallback(() => updateState({}), []);
+    const forceUpdate = React.useCallback(() => {
+        return new Promise<void>((resolve) => {
+            updateState({});
+            resolve();
+        });
+    }, []);
 
-    const handleSubmit = (): void => {
+    const handleSubmit = async (): Promise<void> => {
         if (!initialField) {
             setInitialField(field.clone());
         }
-        field.solve(forceUpdate);
+        await field.solve(forceUpdate);
     };
 
     const handleCellChange = (rowIndex: number, cellIndex: number, value: string): void => {
@@ -24,10 +29,9 @@ export const SudokuTable: React.FC = () => {
         if (cellValue !== DEFAULT_CELL_VALUE && !AVAILABLE_CELL_VALUES.includes(cellValue)) {
             return;
         }
-        const fieldCopy = field.clone();
-        fieldCopy.getCell(rowIndex, cellIndex).fill(cellValue);
-        fieldCopy.validate();
-        setField(fieldCopy);
+        field.getCell(rowIndex, cellIndex).fill(cellValue);
+        field.validate();
+        updateState({});
     };
 
     const handleReset = (): void => {
@@ -42,9 +46,16 @@ export const SudokuTable: React.FC = () => {
         setInitialField(undefined);
     };
 
+    const handleSpeedChange = (event: ChangeEvent<HTMLInputElement>): void => {
+        const timeout = parseInt(event.target.value);
+        field.setTimeoutMs(timeout);
+        updateState({});
+    };
+
     const setTestField = (index: number): void => {
-        const field = getTestField(index);
-        setField(field);
+        field.stop();
+        const testField = getTestField(index);
+        setField(testField);
         setInitialField(undefined);
     };
 
@@ -63,9 +74,7 @@ export const SudokuTable: React.FC = () => {
                                             value={cell.getValue() === DEFAULT_CELL_VALUE ? '' : cell.getValue()}
                                         />
                                     )}
-                                    {showPossibleValues && cell.getValue() === DEFAULT_CELL_VALUE && (
-                                        <span>{cell.getPossibleValues().join(' ')}</span>
-                                    )}
+                                    {showPossibleValues && <span>{cell.getPossibleValues().join(' ')}</span>}
                                 </td>
                             ))}
                         </tr>
@@ -75,6 +84,9 @@ export const SudokuTable: React.FC = () => {
             <div>
                 <button onClick={handleSubmit} disabled={!field.isValid()}>
                     Solve
+                </button>
+                <button onClick={() => field.stop()} disabled={!field.isRunning()}>
+                    Stop Solve
                 </button>
                 <button onClick={handleReset} disabled={!initialField}>
                     Reset
@@ -87,6 +99,28 @@ export const SudokuTable: React.FC = () => {
                 <button onClick={() => setTestField(1)}>Use Test Field 1</button>
                 <button onClick={() => setTestField(2)}>Use Test Field 2</button>
                 <button onClick={() => setTestField(3)}>Use Test Field 3</button>
+            </div>
+            <div>
+                <span>Set speed: </span>
+                {[
+                    { label: '1x', value: 1000 },
+                    { label: '2x', value: 500 },
+                    { label: '3x', value: 300 },
+                    { label: '4x', value: 100 },
+                    { label: 'ASAP', value: 0 },
+                ].map((v) => (
+                    <div key={v.label} style={{ display: 'inline-block' }}>
+                        <label> {v.label}</label>
+                        <input
+                            type='radio'
+                            id={`speed${v.label}`}
+                            name='speed'
+                            value={`${v.value}`}
+                            checked={field.getTimeoutMs() === v.value}
+                            onChange={handleSpeedChange}
+                        />
+                    </div>
+                ))}
             </div>
         </div>
     );

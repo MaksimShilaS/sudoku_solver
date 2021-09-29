@@ -5,54 +5,83 @@ import { BySinglePossibleValueStrategy } from './strategy/BySinglePossibleValueS
 import { SolveStrategy } from './strategy/SolveStrategy';
 
 export interface Sudoku {
-    solve: (onValueSet: () => void) => void;
+    solve: (onCellUpdated: () => Promise<void>) => Promise<void>;
+    stop: () => void;
     getCells: () => Cell[][];
     getCell: (rowIndex: number, cellIndex: number) => Cell;
     validate: () => void;
     isValid: () => boolean;
     clone: () => Sudoku;
+    setTimeoutMs: (millis: number) => void;
+    getTimeoutMs: () => number;
+    isRunning: () => boolean;
 }
 
 export class ClassicSudoku implements Sudoku {
     private spec = { length: 9 };
+    private timeoutMs: number = 0;
     private cells: Cell[][];
     private strategies: SolveStrategy[] = [new ByKnownCellsStrategy(), new BySinglePossibleValueStrategy()];
+    private running = false;
 
     constructor() {
         this.cells = this.emptyField();
     }
 
-    public solve = (onValueSet: () => void): void => {
-        this.validate();
-        if (!this.isValid) {
-            Notification.error('Sudoku field data is not valid');
-            return;
-        }
-        let hasChanges = false;
-        const columns = this.getColumns();
-        do {
-            const cellsUpdated = this.cells.flatMap((row, rowIndex) => {
-                return row.map((cell, columnIndex) => {
-                    if (cell.hasValue()) {
-                        return false;
+    public stop = (): void => {
+        this.running = false;
+    };
+
+    public isRunning = (): boolean => this.running;
+
+    public solve = (onCellUpdated: () => Promise<void>): Promise<void> => {
+        this.running = true;
+        return new Promise<void>(async (resolve) => {
+            this.validate();
+            if (!this.isValid) {
+                Notification.error('Sudoku field data is not valid');
+                return;
+            }
+            let hasChanges = false;
+            const columns = this.getColumns();
+            do {
+                for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
+                    for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
+                        if (!this.running) {
+                            break;
+                        }
+                        const cell = this.cells[rowIndex][columnIndex];
+                        if (cell.hasValue()) {
+                            continue;
+                        }
+                        const row = this.cells[rowIndex];
+                        const column = columns[columnIndex];
+                        const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
+                        const cellUpdated = this.strategies
+                            .map((strategy) => strategy.solve(cell, row, column, square))
+                            .some((cellUpdated) => cellUpdated);
+                        if (cellUpdated) {
+                            await onCellUpdated();
+                        }
+                        await new Promise((resolve) => setTimeout(resolve, this.timeoutMs));
+                        hasChanges = cellUpdated || hasChanges;
                     }
-                    const column = columns[columnIndex];
-                    const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
-                    const cellUpdated = this.strategies
-                        .map((strategy) => strategy.solve(cell, row, column, square))
-                        .some((cellUpdated) => cellUpdated);
-                    if (cell.hasValue()) {
-                        onValueSet();
-                    }
-                    return cellUpdated;
-                });
-            });
-            hasChanges = cellsUpdated.some((cellUpdated) => cellUpdated);
-        } while (!this.solved() && hasChanges);
-        if (!this.solved()) {
-            Notification.warn("Couldn't solve this sudoku");
-            console.log(this.cells);
-        }
+                }
+            } while (this.running && !this.solved() && hasChanges);
+            this.stop();
+            if (!this.solved()) {
+                Notification.warn("Couldn't solve this sudoku");
+            }
+            resolve();
+        });
+    };
+
+    public setTimeoutMs = (millis: number): void => {
+        this.timeoutMs = millis;
+    };
+
+    public getTimeoutMs = (): number => {
+        return this.timeoutMs;
     };
 
     public getCells = (): Cell[][] => {
@@ -81,9 +110,12 @@ export class ClassicSudoku implements Sudoku {
         const clone = new ClassicSudoku();
         this.cells.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
-                clone.getCell(rowIndex, cellIndex).setValue(cell.getValue());
+                const cellClone = clone.getCell(rowIndex, cellIndex);
+                cellClone.setValue(cell.getValue());
+                cellClone.setPossibleValues(cell.getPossibleValues());
             });
         });
+        clone.timeoutMs = this.timeoutMs;
         return clone;
     };
 
