@@ -2,6 +2,7 @@ import { Notification } from '../utils/Notification';
 import { Cell, DEFAULT_CELL_VALUE } from './Cell';
 import { ByKnownCellsStrategy } from './strategy/ByKnownCellsStrategy';
 import { BySinglePossibleValueStrategy } from './strategy/BySinglePossibleValueStrategy';
+import { BySquareIntersectionStrategy } from './strategy/BySquareIntersectionStrategy';
 import { ByValuesRangeStrategy } from './strategy/ByValuesRangeStrategy';
 import { SolveStrategy } from './strategy/SolveStrategy';
 
@@ -88,7 +89,27 @@ export class ClassicSudoku implements Sudoku {
                             await onCellUpdated();
                             await this.sleep(this.timeoutMs);
                         }
-                        hasChanges = cellUpdated || hasChanges;
+                        hasChanges = hasChanges || cellUpdated;
+                    }
+                }
+                if (!hasChanges && !this.solved()) {
+                    for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
+                        for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
+                            const strategy = new BySquareIntersectionStrategy();
+                            const cell = this.cells[rowIndex][columnIndex];
+                            if (cell.hasValue()) {
+                                continue;
+                            }
+                            const row = this.cells[rowIndex];
+                            const column = columns[columnIndex];
+                            const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
+                            const cellUpdated = strategy.solve(cell, row, column, square);
+                            if (cellUpdated) {
+                                await onCellUpdated();
+                                await this.sleep(this.timeoutMs);
+                            }
+                            hasChanges = hasChanges || cellUpdated;
+                        }
                     }
                 }
             } while (this.running && !this.solved() && hasChanges);
@@ -226,6 +247,15 @@ export class ClassicSudoku implements Sudoku {
     };
 
     private emptyField = (): Cell[][] => {
-        return Array.from(this.spec, () => Array.from(this.spec, () => new Cell()));
+        const field: Cell[][] = [];
+        for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
+            const row: Cell[] = [];
+            for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
+                const cell = new Cell(rowIndex, columnIndex);
+                row.push(cell);
+            }
+            field.push(row);
+        }
+        return field;
     };
 }

@@ -7,6 +7,8 @@ interface CellType {
     getPossibleValues: () => number[];
     setPossibleValues: (values: number[]) => void;
     fill: (value: number) => void;
+    getRowIndex: () => number;
+    getColumnIndex: () => number;
 }
 
 export const DEFAULT_CELL_VALUE = 0;
@@ -16,6 +18,17 @@ export class Cell implements CellType {
     private value = DEFAULT_CELL_VALUE;
     private valid = true;
     private possibleValues = AVAILABLE_CELL_VALUES;
+    private rowIndex;
+    private columnIndex;
+
+    constructor(rowIndex: number, columnIndex: number) {
+        this.rowIndex = rowIndex;
+        this.columnIndex = columnIndex;
+    }
+
+    public getRowIndex = (): number => this.rowIndex;
+
+    public getColumnIndex = (): number => this.columnIndex;
 
     public fill = (value: number): void => {
         this.setValue(value);
