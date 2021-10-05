@@ -1,3 +1,5 @@
+export class BySquareIntersectionStrategy {}
+
 // import { Cell } from '../Cell';
 // import { SolveStrategy } from './SolveStrategy';
 
