@@ -58,18 +58,52 @@ export class ClassicSudoku implements Sudoku {
                 Notification.error('Sudoku field data is not valid');
                 return;
             }
-            let hasChanges = false;
-            const columns = this.getColumns();
-            do {
-                hasChanges = false;
+            await this.solveAsPossible(onCellUpdated);
+            this.solved() ? Notification.info('Sudoku solved!') : Notification.warn("Couldn't solve this sudoku");
+            this.running = false;
+            resolve();
+        });
+    };
+
+    private solveAsPossible = async (onCellUpdated: () => Promise<void>): Promise<void> => {
+        let hasChanges = false;
+        const columns = this.getColumns();
+        do {
+            hasChanges = false;
+            for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
+                for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
+                    while (this.paused && this.running) {
+                        await this.sleep(1000);
+                    }
+                    if (!this.running) {
+                        break;
+                    }
+                    const cell = this.cells[rowIndex][columnIndex];
+                    if (cell.hasValue()) {
+                        continue;
+                    }
+                    const row = this.cells[rowIndex];
+                    const column = columns[columnIndex];
+                    const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
+                    const cellUpdated = this.strategies
+                        .map((strategy) => strategy.solve(cell, row, column, square))
+                        .some((cellUpdated) => cellUpdated);
+                    if (cell.hasValue()) {
+                        this.removeFromPossibleValues(onCellUpdated, cell.getValue(), row);
+                        this.removeFromPossibleValues(onCellUpdated, cell.getValue(), column);
+                        this.removeFromPossibleValues(onCellUpdated, cell.getValue(), square);
+                    }
+                    if (cellUpdated) {
+                        await onCellUpdated();
+                        await this.sleep(this.timeoutMs);
+                    }
+                    hasChanges = hasChanges || cellUpdated;
+                }
+            }
+            if (!hasChanges && !this.solved()) {
                 for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
                     for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
-                        while (this.paused && this.running) {
-                            await this.sleep(1000);
-                        }
-                        if (!this.running) {
-                            break;
-                        }
+                        const strategy = new BySquareIntersectionStrategy();
                         const cell = this.cells[rowIndex][columnIndex];
                         if (cell.hasValue()) {
                             continue;
@@ -77,14 +111,7 @@ export class ClassicSudoku implements Sudoku {
                         const row = this.cells[rowIndex];
                         const column = columns[columnIndex];
                         const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
-                        const cellUpdated = this.strategies
-                            .map((strategy) => strategy.solve(cell, row, column, square))
-                            .some((cellUpdated) => cellUpdated);
-                        if (cell.hasValue()) {
-                            this.removeFromPossibleValues(cell.getValue(), row);
-                            this.removeFromPossibleValues(cell.getValue(), column);
-                            this.removeFromPossibleValues(cell.getValue(), square);
-                        }
+                        const cellUpdated = strategy.solve(cell, row, column, square);
                         if (cellUpdated) {
                             await onCellUpdated();
                             await this.sleep(this.timeoutMs);
@@ -92,47 +119,22 @@ export class ClassicSudoku implements Sudoku {
                         hasChanges = hasChanges || cellUpdated;
                     }
                 }
-                if (!hasChanges && !this.solved()) {
-                    for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
-                        for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
-                            const strategy = new BySquareIntersectionStrategy();
-                            const cell = this.cells[rowIndex][columnIndex];
-                            if (cell.hasValue()) {
-                                continue;
-                            }
-                            const row = this.cells[rowIndex];
-                            const column = columns[columnIndex];
-                            const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
-                            const cellUpdated = strategy.solve(cell, row, column, square);
-                            if (cellUpdated) {
-                                await onCellUpdated();
-                                await this.sleep(this.timeoutMs);
-                            }
-                            hasChanges = hasChanges || cellUpdated;
-                        }
-                    }
-                }
-            } while (this.running && !this.solved() && hasChanges);
-            if (!this.solved()) {
-                Notification.warn("Couldn't solve this sudoku");
-            } else {
-                Notification.info('Sudoku solved!');
             }
-            this.running = false;
-            resolve();
-        });
+        } while (this.running && !this.solved() && hasChanges);
     };
 
-    private removeFromPossibleValues = (value: number, range: Cell[]): void => {
-        range
-            .filter((cell) => !cell.hasValue())
-            .forEach((cell) => {
-                const possibleValues = cell.getPossibleValues();
-                if (possibleValues.includes(value)) {
-                    const filtered = possibleValues.filter((v) => v !== value);
-                    filtered.length === 1 ? cell.fill(filtered[0]) : cell.setPossibleValues(filtered);
-                }
-            });
+    private removeFromPossibleValues = async (onCellUpdated: () => Promise<void>, value: number, range: Cell[]): Promise<void> => {
+        const cellsToCheck = range.filter((cell) => !cell.hasValue());
+        for (let i = 0; i < cellsToCheck.length; i++) {
+            const cell = cellsToCheck[i];
+            const possibleValues = cell.getPossibleValues();
+            if (possibleValues.includes(value)) {
+                const filtered = possibleValues.filter((v) => v !== value);
+                filtered.length === 1 ? cell.fill(filtered[0]) : cell.setPossibleValues(filtered);
+                await onCellUpdated();
+                await this.sleep(this.timeoutMs);
+            }
+        }
     };
 
     private sleep = (timeoutMs: number): Promise<void> => {
