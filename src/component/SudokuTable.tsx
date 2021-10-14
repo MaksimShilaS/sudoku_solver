@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import { AVAILABLE_CELL_VALUES, DEFAULT_CELL_VALUE } from '../app/Cell';
 import { ClassicSudoku, Sudoku } from '../app/Sudoku';
-import { getTestField } from '../app/TestField';
+import { getTestField, TEST_FIELDS } from '../app/TestField';
 import './style.css';
 
 export const SudokuTable: React.FC = () => {
@@ -102,9 +102,9 @@ export const SudokuTable: React.FC = () => {
                 <input type='checkbox' value={`${showPossibleValues}`} onChange={(event) => setShowPossibleValues(event.target.checked)} />
             </div>
             <div>
-                <button onClick={() => setTestField(1)}>Use Test Field 1</button>
-                <button onClick={() => setTestField(2)}>Use Test Field 2</button>
-                <button onClick={() => setTestField(3)}>Use Test Field 3</button>
+                {TEST_FIELDS.map((field, index) => (
+                    <button onClick={() => setTestField(index)}>Use Test Field {index + 1}</button>
+                ))}
             </div>
             <div>
                 <span>Set speed: </span>
