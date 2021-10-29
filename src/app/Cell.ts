@@ -12,7 +12,12 @@ interface CellType {
 }
 
 export const DEFAULT_CELL_VALUE = 0;
-export const AVAILABLE_CELL_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+export const AVAILABLE_CELL_VALUES_FIELD = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+];
+export const AVAILABLE_CELL_VALUES = AVAILABLE_CELL_VALUES_FIELD.flatMap((v) => v);
 
 export class Cell implements CellType {
     private value = DEFAULT_CELL_VALUE;

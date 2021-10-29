@@ -1,11 +1,17 @@
-import { SudokuTable } from "./component/SudokuTable";
+import { Container } from 'react-bootstrap';
+import { SudokuPage } from './component/SudokuPage';
+
+const containerStyles: React.CSSProperties = {
+    paddingLeft: '8%',
+    paddingRight: '8%',
+};
 
 function App() {
-  return (
-    <div className="App">
-      <SudokuTable />
-    </div>
-  );
+    return (
+        <div style={containerStyles}>
+            <SudokuPage />
+        </div>
+    );
 }
 
 export default App;

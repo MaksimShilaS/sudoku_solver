@@ -82,6 +82,11 @@ export class ClassicSudoku implements Sudoku {
                     if (cell.hasValue()) {
                         continue;
                     }
+                    if (cell.getPossibleValues().length === 1) {
+                        const cellValue = cell.getPossibleValues()[0];
+                        cell.fill(cellValue);
+                        hasChanges = true;
+                    }
                     const row = this.cells[rowIndex];
                     const column = columns[columnIndex];
                     const square = this.getSquare(rowIndex, columnIndex).flatMap((cell) => cell);
