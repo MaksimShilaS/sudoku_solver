@@ -3,6 +3,7 @@ import { Cell } from '../app/Cell';
 import { ClassicSudoku, Sudoku } from '../app/Sudoku';
 import { getTestField, TEST_FIELDS } from '../app/TestField';
 import SudokuTable from './controls/SudokuTable';
+import './assets/style.css';
 
 export const SudokuPage: React.FC = () => {
     const [field, setField] = React.useState<Sudoku>(new ClassicSudoku());
@@ -18,6 +19,7 @@ export const SudokuPage: React.FC = () => {
 
     const handleCellChange = (cell: Cell, value: number): void => {
         cell.fill(value);
+        field.validate();
         rerender({});
     };
 

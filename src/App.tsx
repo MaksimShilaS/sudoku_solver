@@ -1,4 +1,3 @@
-import { Container } from 'react-bootstrap';
 import { SudokuPage } from './component/SudokuPage';
 
 const containerStyles: React.CSSProperties = {

@@ -1,7 +1,6 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, HTMLProps, useState } from 'react';
 import { AVAILABLE_CELL_VALUES, AVAILABLE_CELL_VALUES_FIELD, Cell, DEFAULT_CELL_VALUE } from '../../app/Cell';
 import { Sudoku } from '../../app/Sudoku';
-import './assets/style.css';
 
 interface SudokuTableProps {
     field: Sudoku;
@@ -32,7 +31,7 @@ const SudokuTable: React.FC<SudokuTableProps> = ({ field, onChange }) => {
                     {field.getCells().map((row, rowIndex) => (
                         <tr className='game-table__row' key={rowIndex}>
                             {row.map((cell, cellIndex) => (
-                                <td className='game-table__row__cell' key={cellIndex}>
+                                <td className={'game-table__row__cell'} key={cellIndex}>
                                     <CellView cell={cell} showPossibleValues={showPossibleValues} onChange={onChange} />
                                 </td>
                             ))}
@@ -47,6 +46,8 @@ const SudokuTable: React.FC<SudokuTableProps> = ({ field, onChange }) => {
 };
 
 const CellView: React.FC<CellViewProps> = ({ cell, showPossibleValues, onChange }) => {
+    const [forceEdit, setForceEdit] = useState<boolean>(false);
+
     const handleCellValueChange = (cell: Cell, value: string): void => {
         if (!value) {
             onChange(cell, DEFAULT_CELL_VALUE);
@@ -60,24 +61,28 @@ const CellView: React.FC<CellViewProps> = ({ cell, showPossibleValues, onChange 
 
     return (
         <>
-            {(!showPossibleValues || cell.getValue() !== DEFAULT_CELL_VALUE) && (
+            {(!showPossibleValues || forceEdit || cell.getValue() !== DEFAULT_CELL_VALUE) && (
                 <input
                     className={'game-table__row__cell__input' + (cell.isValid() ? '' : ' invalid-cell')}
                     onChange={(event) => handleCellValueChange(cell, event.target.value)}
                     value={cell.getValue() === DEFAULT_CELL_VALUE ? '' : cell.getValue()}
+                    onBlur={() => setForceEdit(false)}
+                    autoFocus={forceEdit}
                 />
             )}
-            {showPossibleValues && <PossibleValuesView possibleValues={cell.getPossibleValues()} />}
+            {showPossibleValues && !forceEdit && (
+                <PossibleValuesView possibleValues={cell.getPossibleValues()} onClick={() => setForceEdit(true)} />
+            )}
         </>
     );
 };
 
-const PossibleValuesView: React.FC<PossibleValuesViewProps> = ({ possibleValues }) => {
+const PossibleValuesView: React.FC<PossibleValuesViewProps & HTMLProps<HTMLDivElement>> = ({ possibleValues, onClick }) => {
     if (possibleValues.length === 0) {
         return null;
     }
     return (
-        <div className='game-table__row__cell_possible-values'>
+        <div className='game-table__row__cell_possible-values' onClick={onClick}>
             {AVAILABLE_CELL_VALUES_FIELD.map((row, rowIndex) => (
                 <div key={rowIndex} className='row m-0 p-0'>
                     {row.map((value) => (

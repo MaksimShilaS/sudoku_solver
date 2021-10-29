@@ -37,7 +37,7 @@ export class Cell implements CellType {
 
     public fill = (value: number): void => {
         this.setValue(value);
-        this.possibleValues = [];
+        this.possibleValues = value === DEFAULT_CELL_VALUE ? AVAILABLE_CELL_VALUES : [];
     };
 
     public isValid = (): boolean => {
