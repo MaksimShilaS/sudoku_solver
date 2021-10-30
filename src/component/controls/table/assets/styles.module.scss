@@ -1,0 +1,48 @@
+$border: 1px solid black;
+$fatBorder: 4px solid black;
+$cellSize: 60px;
+
+.table {
+    border-left: $fatBorder;
+    border-top: $fatBorder;
+}
+
+.row:nth-child(3n) {
+    border-bottom: $fatBorder;
+}
+
+.cell {
+    cursor: pointer;
+    padding: 0;
+    border: $border;
+    width: $cellSize;
+    height: $cellSize;
+    min-width: $cellSize;
+    min-height: $cellSize;
+}
+
+.cell:nth-child(3n) {
+    border-right: $fatBorder;
+}
+
+.cellInput {
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    height: 100%;
+    font-size: 40px;
+    padding-left: 17px;
+}
+
+.invalidCell {
+    background-color: rgba(249, 140, 163, 0.8);
+}
+
+.possibleValuesTable {
+    font-size: 14px;
+}
+
+.possibleValueCell {
+    padding: 0px 0px 0px 5px !important;
+    height: 19px;
+}

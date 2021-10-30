@@ -1,3 +1,4 @@
+import { SudokuContextProvider } from './component/SudokuContext';
 import { SudokuPage } from './component/SudokuPage';
 
 const containerStyles: React.CSSProperties = {
@@ -8,7 +9,9 @@ const containerStyles: React.CSSProperties = {
 function App() {
     return (
         <div style={containerStyles}>
-            <SudokuPage />
+            <SudokuContextProvider>
+                <SudokuPage />
+            </SudokuContextProvider>
         </div>
     );
 }

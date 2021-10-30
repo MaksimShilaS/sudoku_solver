@@ -4,7 +4,7 @@
     "prettier.semi": true,
     "prettier.singleQuote": true,
     "prettier.jsxSingleQuote": true,
-    "prettier.printWidth": 140,
+    "prettier.printWidth": 120,
     "prettier.tabWidth": 4,
     "editor.tabSize": 4,
     "javascript.updateImportsOnFileMove.enabled": "always",
