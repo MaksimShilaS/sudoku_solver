@@ -1,7 +1,8 @@
 import { ChangeEvent, useContext, useState } from 'react';
-import { ClassicSudoku, Sudoku } from '../../app/Sudoku';
-import { getTestField, TEST_FIELDS } from '../../app/TestField';
-import { SudokuContext } from '../SudokuContext';
+import { Form } from 'react-bootstrap';
+import { ClassicSudoku, Sudoku } from '../../../app/Sudoku';
+import { getTestField, TEST_FIELDS } from '../../../app/TestField';
+import { SudokuContext } from '../../SudokuPage';
 
 const FieldControlPanel: React.FC = () => {
     const { field, setField, rerender, rerenderAsync } = useContext(SudokuContext);
@@ -47,7 +48,7 @@ const FieldControlPanel: React.FC = () => {
 
     return (
         <div>
-            <div>
+            <div className='m-2'>
                 <button onClick={handleSubmit} disabled={!field.isValid() || field.isRunning()}>
                     Solve
                 </button>
@@ -59,12 +60,12 @@ const FieldControlPanel: React.FC = () => {
                 </button>
                 <button onClick={handleClear}>Clear</button>
             </div>
-            <div>
+            <div className='m-2'>
                 {TEST_FIELDS.map((field, index) => (
                     <button onClick={() => setTestField(index)}>Use Test Field {index + 1}</button>
                 ))}
             </div>
-            <div>
+            <div className='m-2'>
                 <span>Set speed: </span>
                 {[
                     { label: '1x', value: 1000 },
@@ -73,17 +74,16 @@ const FieldControlPanel: React.FC = () => {
                     { label: '4x', value: 100 },
                     { label: 'ASAP', value: 0 },
                 ].map((v) => (
-                    <div key={v.label} style={{ display: 'inline-block' }}>
-                        <label> {v.label}</label>
-                        <input
-                            type='radio'
-                            id={`speed${v.label}`}
-                            name='speed'
-                            value={`${v.value}`}
-                            checked={field.getTimeoutMs() === v.value}
-                            onChange={handleSpeedChange}
-                        />
-                    </div>
+                    <Form.Check
+                        inline
+                        type='radio'
+                        label={v.label}
+                        id={`speed${v.label}`}
+                        name='speed'
+                        value={`${v.value}`}
+                        checked={field.getTimeoutMs() === v.value}
+                        onChange={handleSpeedChange}
+                    />
                 ))}
             </div>
         </div>

@@ -1,9 +1,9 @@
 import { useContext, useState } from 'react';
 import styles from './assets/styles.module.scss';
-import { SudokuContext } from '../../SudokuContext';
 import { Cell } from '../../../app/Cell';
 import { CellView } from './CellView';
 import { Form } from 'react-bootstrap';
+import { SudokuContext } from '../../SudokuPage';
 
 export const TableView: React.FC = () => {
     const { field, rerender } = useContext(SudokuContext);
