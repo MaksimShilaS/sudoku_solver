@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import styles from './assets/styles.module.scss';
+import styles from './assets/styles.module.css';
 import { Cell } from '../../../app/Cell';
 import { CellView } from './CellView';
 import { Form } from 'react-bootstrap';

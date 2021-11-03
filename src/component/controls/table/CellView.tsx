@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { AVAILABLE_CELL_VALUES, AVAILABLE_CELL_VALUES_FIELD, Cell, DEFAULT_CELL_VALUE } from '../../../app/Cell';
-import styles from './assets/styles.module.scss';
+import styles from './assets/styles.module.css';
 
 interface CellViewProps {
     cell: Cell;

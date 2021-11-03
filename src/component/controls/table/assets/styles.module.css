@@ -1,28 +1,24 @@
-$border: 1px solid black;
-$fatBorder: 4px solid black;
-$cellSize: 60px;
-
 .table {
-    border-left: $fatBorder;
-    border-top: $fatBorder;
+    border-left: 4px solid black;
+    border-top: 4px solid black;
 }
 
 .row:nth-child(3n) {
-    border-bottom: $fatBorder;
+    border-bottom: 4px solid black;
 }
 
 .cell {
     cursor: pointer;
     padding: 0;
-    border: $border;
-    width: $cellSize;
-    height: $cellSize;
-    min-width: $cellSize;
-    min-height: $cellSize;
+    border: 1px solid black;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
 }
 
 .cell:nth-child(3n) {
-    border-right: $fatBorder;
+    border-right: 4px solid black;
 }
 
 .cellInput {

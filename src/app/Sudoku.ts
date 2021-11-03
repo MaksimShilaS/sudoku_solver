@@ -26,7 +26,11 @@ export class ClassicSudoku implements Sudoku {
     private spec = { length: 9 };
     private timeoutMs: number = 0;
     private cells: Cell[][];
-    private strategies: SolveStrategy[] = [new ByKnownCellsStrategy(), new BySinglePossibleValueStrategy(), new ByValuesRangeStrategy()];
+    private strategies: SolveStrategy[] = [
+        new ByKnownCellsStrategy(),
+        new BySinglePossibleValueStrategy(),
+        new ByValuesRangeStrategy(),
+    ];
     private running = false;
     private paused = false;
 
@@ -85,6 +89,7 @@ export class ClassicSudoku implements Sudoku {
                     if (cell.getPossibleValues().length === 1) {
                         const cellValue = cell.getPossibleValues()[0];
                         cell.fill(cellValue);
+                        await onCellUpdated();
                         hasChanges = true;
                     }
                     const row = this.cells[rowIndex];
@@ -128,7 +133,11 @@ export class ClassicSudoku implements Sudoku {
         } while (this.running && !this.solved() && hasChanges);
     };
 
-    private removeFromPossibleValues = async (onCellUpdated: () => Promise<void>, value: number, range: Cell[]): Promise<void> => {
+    private removeFromPossibleValues = async (
+        onCellUpdated: () => Promise<void>,
+        value: number,
+        range: Cell[]
+    ): Promise<void> => {
         const cellsToCheck = range.filter((cell) => !cell.hasValue());
         for (let i = 0; i < cellsToCheck.length; i++) {
             const cell = cellsToCheck[i];

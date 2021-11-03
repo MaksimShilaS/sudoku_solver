@@ -62,7 +62,9 @@ const FieldControlPanel: React.FC = () => {
             </div>
             <div className='m-2'>
                 {TEST_FIELDS.map((field, index) => (
-                    <button onClick={() => setTestField(index)}>Use Test Field {index + 1}</button>
+                    <button key={index} onClick={() => setTestField(index)}>
+                        Use Test Field {index + 1}
+                    </button>
                 ))}
             </div>
             <div className='m-2'>
@@ -75,6 +77,7 @@ const FieldControlPanel: React.FC = () => {
                     { label: 'ASAP', value: 0 },
                 ].map((v) => (
                     <Form.Check
+                        key={v.label}
                         inline
                         type='radio'
                         label={v.label}
