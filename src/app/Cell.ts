@@ -1,3 +1,5 @@
+import { Notification } from '../utils/Notification';
+
 interface CellType {
     isValid: () => boolean;
     setIsValid: (isValid: boolean) => void;
@@ -36,6 +38,7 @@ export class Cell implements CellType {
     public getColumnIndex = (): number => this.columnIndex;
 
     public fill = (value: number): void => {
+        Notification.info(`Set value ${value} to cell [${this.rowIndex}:${this.columnIndex}]`);
         this.setValue(value);
         this.possibleValues = value === DEFAULT_CELL_VALUE ? AVAILABLE_CELL_VALUES : [];
     };

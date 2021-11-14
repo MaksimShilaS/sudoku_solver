@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useState } from 'react';
 import { TableView } from './controls/table/TableView';
 import { ClassicSudoku, Sudoku } from '../app/Sudoku';
 import { FieldControlPanel } from './controls/controlPanel';
+import { Col, Row } from 'react-bootstrap';
+import { EventsDisplay } from './controls/eventsDisplay';
 
 interface SudokuContextProps {
     field: Sudoku;
@@ -32,8 +34,15 @@ export const SudokuPage: React.FC = () => {
 
     return (
         <SudokuContext.Provider value={{ field, setField, rerender: rerender, rerenderAsync: rerenderAsync }}>
-            <TableView />
-            <FieldControlPanel />
+            <Row>
+                <Col>
+                    <TableView />
+                    <FieldControlPanel />
+                </Col>
+                <Col>
+                    <EventsDisplay />
+                </Col>
+            </Row>
         </SudokuContext.Provider>
     );
 };
