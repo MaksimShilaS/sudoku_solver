@@ -1,10 +1,10 @@
-import { ChangeEvent, useContext, useState } from 'react';
-import { Form } from 'react-bootstrap';
+import { useContext, useState } from 'react';
 import { ClassicSudoku, Sudoku } from '../../../app/Sudoku';
-import { getTestField, TEST_FIELDS } from '../../../app/TestField';
 import { SudokuContext } from '../../SudokuPage';
+import { SpeedSelection } from './components/SpeedSelection';
+import { TestFieldSelection } from './components/TestFieldSelection';
 
-const FieldControlPanel: React.FC = () => {
+export const FieldControlPanel: React.FC = () => {
     const { field, setField, rerender, rerenderAsync } = useContext(SudokuContext);
     const [initialField, setInitialField] = useState<Sudoku | undefined>();
 
@@ -33,16 +33,14 @@ const FieldControlPanel: React.FC = () => {
         rerender();
     };
 
-    const handleSpeedChange = (event: ChangeEvent<HTMLInputElement>): void => {
-        const timeout = parseInt(event.target.value);
-        field.setTimeoutMs(timeout);
+    const handleSpeedChange = (value: number): void => {
+        field.setTimeoutMs(value);
         rerender();
     };
 
-    const setTestField = (index: number): void => {
+    const setTestField = (field: Sudoku): void => {
         field.stop();
-        const testField = getTestField(index);
-        setField(testField);
+        setField(field);
         setInitialField(undefined);
     };
 
@@ -60,37 +58,8 @@ const FieldControlPanel: React.FC = () => {
                 </button>
                 <button onClick={handleClear}>Clear</button>
             </div>
-            <div className='m-2'>
-                {TEST_FIELDS.map((field, index) => (
-                    <button key={index} onClick={() => setTestField(index)}>
-                        Use Test Field {index + 1}
-                    </button>
-                ))}
-            </div>
-            <div className='m-2'>
-                <span>Set speed: </span>
-                {[
-                    { label: '1x', value: 1000 },
-                    { label: '2x', value: 500 },
-                    { label: '3x', value: 300 },
-                    { label: '4x', value: 100 },
-                    { label: 'ASAP', value: 0 },
-                ].map((v) => (
-                    <Form.Check
-                        key={v.label}
-                        inline
-                        type='radio'
-                        label={v.label}
-                        id={`speed${v.label}`}
-                        name='speed'
-                        value={`${v.value}`}
-                        checked={field.getTimeoutMs() === v.value}
-                        onChange={handleSpeedChange}
-                    />
-                ))}
-            </div>
+            <TestFieldSelection className='m-2' handleSubmit={setTestField} />
+            <SpeedSelection className='m-2' value={field.getTimeoutMs()} handleChange={handleSpeedChange} />
         </div>
     );
 };
-
-export default FieldControlPanel;

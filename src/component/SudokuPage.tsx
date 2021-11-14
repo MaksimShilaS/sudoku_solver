@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useState } from 'react';
-import FieldControlPanel from './controls/controlPanel/FieldControlPanel';
 import { TableView } from './controls/table/TableView';
 import { ClassicSudoku, Sudoku } from '../app/Sudoku';
+import { FieldControlPanel } from './controls/controlPanel';
 
 interface SudokuContextProps {
     field: Sudoku;

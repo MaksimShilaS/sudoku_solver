@@ -42,8 +42,8 @@ export const CellView: React.FC<CellViewProps> = ({ cell, showPossibleValues, on
                 <div className={styles.possibleValuesTable} onClick={() => setForceEdit(true)}>
                     {AVAILABLE_CELL_VALUES_FIELD.map((row, rowIndex) => (
                         <Row key={rowIndex} className='m-0 p-0'>
-                            {row.map((value) => (
-                                <Col className={`${styles.possibleValueCell} m-0`}>
+                            {row.map((value, colIndex) => (
+                                <Col key={colIndex} className={`${styles.possibleValueCell} m-0`}>
                                     {possibleValues.includes(value) ? `${value}` : '-'}
                                 </Col>
                             ))}

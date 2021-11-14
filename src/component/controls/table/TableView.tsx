@@ -24,6 +24,7 @@ export const TableView: React.FC = () => {
                             {row.map((cell, cellIndex) => (
                                 <td className={styles.cell} key={cellIndex}>
                                     <CellView
+                                        key={cellIndex}
                                         cell={cell}
                                         showPossibleValues={showPossibleValues}
                                         onChange={handleCellChange}
