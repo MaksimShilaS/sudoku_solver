@@ -6,6 +6,13 @@ import { BySquareIntersectionStrategy } from './strategy/BySquareIntersectionStr
 import { ByValuesRangeStrategy } from './strategy/ByValuesRangeStrategy';
 import { SolveStrategy } from './strategy/SolveStrategy';
 
+interface Suggestion {
+    snapshot: Sudoku;
+    row: number;
+    col: number;
+    number: number;
+}
+
 export interface Sudoku {
     solve: (onCellUpdated: () => Promise<void>) => Promise<void>;
     stop: () => void;
@@ -33,6 +40,7 @@ export class ClassicSudoku implements Sudoku {
     ];
     private running = false;
     private paused = false;
+    private suggestions: Suggestion[] = [];
 
     constructor() {
         this.cells = this.emptyField();
@@ -58,12 +66,21 @@ export class ClassicSudoku implements Sudoku {
         return new Promise<void>(async (resolve) => {
             this.running = true;
             this.validate();
-            if (!this.isValid) {
+            if (!this.isValid()) {
                 Notification.error('Sudoku field data is not valid');
                 return;
             }
             await this.solveAsPossible(onCellUpdated);
-            this.solved() ? Notification.info('Sudoku solved!') : Notification.warn("Couldn't solve this sudoku");
+            this.validate();
+            await onCellUpdated();
+            if (this.solved()) {
+                Notification.info('Sudoku solved!');
+            } else if (!this.isValid()) {
+                Notification.error('There are some mistakes');
+            } else {
+                Notification.warn("Couldn't solve this sudoku");
+            }
+
             this.running = false;
             resolve();
         });
@@ -71,9 +88,9 @@ export class ClassicSudoku implements Sudoku {
 
     private solveAsPossible = async (onCellUpdated: () => Promise<void>): Promise<void> => {
         let hasChanges = false;
-        const columns = this.getColumns();
         do {
             hasChanges = false;
+            const columns = this.getColumns();
             for (let rowIndex = 0; rowIndex < this.spec.length; rowIndex++) {
                 for (let columnIndex = 0; columnIndex < this.spec.length; columnIndex++) {
                     while (this.paused && this.running) {
@@ -128,6 +145,40 @@ export class ClassicSudoku implements Sudoku {
                         }
                         hasChanges = hasChanges || cellUpdated;
                     }
+                }
+            }
+            if (!hasChanges && !this.solved()) {
+                const suggestionCandidate = this.cells
+                    .flatMap((c) => c)
+                    .filter((c) => !c.hasValue())
+                    .reduce((a, b) => (a.getPossibleValues().length < b.getPossibleValues().length ? a : b));
+                const suggestion = suggestionCandidate.getPossibleValues()[0];
+                const row = suggestionCandidate.getRowIndex();
+                const col = suggestionCandidate.getColumnIndex();
+
+                Notification.info(`Suggest that cell [${row}:${col}] has value ${suggestion}`);
+                this.suggestions.push({
+                    snapshot: this.clone(),
+                    row: row,
+                    col: col,
+                    number: suggestion,
+                });
+                suggestionCandidate.fill(suggestion);
+                await onCellUpdated();
+                hasChanges = true;
+            }
+            if (this.suggestions.length > 0) {
+                this.validate();
+                if (!this.isValid()) {
+                    Notification.info('Restore field from last snapshot');
+                    const suggestion = this.suggestions.pop();
+                    const snapshot = suggestion!.snapshot;
+                    const suggestedNumber = suggestion!.number;
+                    this.cells = snapshot.getCells();
+                    const cell = this.getCell(suggestion!.row, suggestion!.col);
+                    const possibleValues = cell.getPossibleValues().filter((v) => v !== suggestedNumber);
+                    cell.setPossibleValues(possibleValues);
+                    await onCellUpdated();
                 }
             }
         } while (this.running && !this.solved() && hasChanges);

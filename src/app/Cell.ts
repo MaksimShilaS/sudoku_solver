@@ -44,7 +44,7 @@ export class Cell implements CellType {
     };
 
     public isValid = (): boolean => {
-        return this.valid;
+        return this.valid && (this.hasValue() || this.possibleValues.length > 0);
     };
 
     public setIsValid = (isValid: boolean): void => {
